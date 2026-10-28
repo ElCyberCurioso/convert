@@ -1,4 +1,4 @@
-// Interfaz de Transmuta. Todo el contenido que procede de archivos del
+// Interfaz de Converter. Todo el contenido que procede de archivos del
 // usuario (nombres, mensajes) se inserta con textContent, nunca como HTML.
 
 import { detectFormat } from './detect.js';
@@ -28,8 +28,8 @@ function h(tag, attrs = {}, ...kids) {
 const $ = (s, el = document) => el.querySelector(s);
 
 const store = {
-  get(k, d) { try { const v = localStorage.getItem(`transmuta:${k}`); return v === null ? d : JSON.parse(v); } catch { return d; } },
-  set(k, v) { try { localStorage.setItem(`transmuta:${k}`, JSON.stringify(v)); } catch { /* sin almacenamiento */ } },
+  get(k, d) { try { const v = localStorage.getItem(`converter:${k}`); return v === null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(`converter:${k}`, JSON.stringify(v)); } catch { /* sin almacenamiento */ } },
 };
 
 const DEFAULT_TARGET = {
@@ -384,7 +384,7 @@ function renderToolbar() {
   const right = h('div', { class: 'tb-group' });
   if (pending.length) right.append(h('button', { class: 'btn primary', type: 'button', onclick: () => queueItems(pending) }, icon('arrow'), h('span', { text: pending.length > 1 ? `Convertir ${pending.length}` : 'Convertir' })));
   if (busy) right.append(h('button', { class: 'btn ghost', type: 'button', onclick: () => state.items.forEach(cancelItem) }, icon('stop'), h('span', { text: 'Cancelar todo' })));
-  if (outputs.length > 1) right.append(h('button', { class: 'btn', type: 'button', onclick: () => downloadZip(outputs, 'transmuta.zip') }, icon('download'), h('span', { text: 'Descargar todo (ZIP)' })));
+  if (outputs.length > 1) right.append(h('button', { class: 'btn', type: 'button', onclick: () => downloadZip(outputs, 'converter.zip') }, icon('download'), h('span', { text: 'Descargar todo (ZIP)' })));
   for (const m of MERGES) {
     const n = state.items.filter((i) => m.accepts(i.det.id)).length;
     if (n >= 2 && n === state.items.length) right.append(h('button', { class: 'btn', type: 'button', disabled: state.merge?.status === 'running', onclick: () => runMerge(m) }, icon(m.id === 'merge-pdf' ? 'merge' : 'archive'), h('span', { text: m.label })));

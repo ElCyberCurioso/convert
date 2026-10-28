@@ -177,7 +177,7 @@ export default {
         const woff2 = input.format === 'woff2' ? await input.bytes() : await (await loadWoff2()).compress(sfnt);
         if (to === 'woff2') return new Blob([woff2], { type: 'font/woff2' });
         const info = fontInfo(sfnt);
-        const css = `/* ${info.family} ${info.subfamily} — generado con Transmuta */\n@font-face {\n  font-family: '${info.family.replace(/'/g, "\\'")}';\n  src: url(data:font/woff2;base64,${bytesToBase64(woff2)}) format('woff2');\n  font-weight: ${info.weight};\n  font-style: ${info.italic ? 'italic' : 'normal'};\n  font-display: swap;\n}\n`;
+        const css = `/* ${info.family} ${info.subfamily} — generado con Converter */\n@font-face {\n  font-family: '${info.family.replace(/'/g, "\\'")}';\n  src: url(data:font/woff2;base64,${bytesToBase64(woff2)}) format('woff2');\n  font-weight: ${info.weight};\n  font-style: ${info.italic ? 'italic' : 'normal'};\n  font-display: swap;\n}\n`;
         return textBlob(css, 'text/css');
       },
     },

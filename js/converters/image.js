@@ -345,8 +345,8 @@ export async function mergeToPdf(inputs, ctx) {
       await addImagePage(pdf, await imageSource(input, ctx.opts), ctx.opts);
     }
   }
-  pdf.setProducer('Transmuta');
-  pdf.setCreator('Transmuta');
+  pdf.setProducer('Converter');
+  pdf.setCreator('Converter');
   return new Blob([await pdf.save()], { type: 'application/pdf' });
 }
 
@@ -369,7 +369,7 @@ export default {
           const { PDFDocument } = await loadPdfLib();
           const pdf = await PDFDocument.create();
           await addImagePage(pdf, await imageSource(input, opts), opts);
-          pdf.setProducer('Transmuta');
+          pdf.setProducer('Converter');
           return new Blob([await pdf.save()], { type: 'application/pdf' });
         }
         const canvas = await decodeToCanvas(input, opts);

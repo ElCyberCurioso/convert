@@ -1,5 +1,5 @@
 {
-  "name": "transmuta",
+  "name": "converter",
   "version": "1.0.0",
   "private": true,
   "description": "Conversor de archivos 100 % en el navegador: imágenes, audio, vídeo, documentos, hojas de cálculo, datos, comprimidos, fuentes y subtítulos. Listo para GitHub Pages.",

@@ -1,4 +1,4 @@
-# Transmuta
+# Converter
 
 **Conversor de archivos que funciona entero en el navegador.** Imágenes, audio, vídeo,
 documentos, hojas de cálculo, datos, comprimidos, fuentes y subtítulos: **81 formatos
@@ -16,13 +16,13 @@ terceros en tiempo de ejecución. Pensado para publicarse en **GitHub Pages**.
 
 ## Publicar en GitHub Pages
 
-1. Crea un repositorio (por ejemplo `transmuta`) y sube el contenido de esta carpeta:
+1. Crea un repositorio (por ejemplo `converter`) y sube el contenido de esta carpeta:
 
    ```bash
    git init -b main
    git add .
-   git commit -m "Transmuta: conversor de archivos en el navegador"
-   git remote add origin git@github.com:TU_USUARIO/transmuta.git
+   git commit -m "Converter: conversor de archivos en el navegador"
+   git remote add origin git@github.com:TU_USUARIO/converter.git
    git push -u origin main
    ```
 
@@ -30,7 +30,7 @@ terceros en tiempo de ejecución. Pensado para publicarse en **GitHub Pages**.
 3. El workflow `.github/workflows/deploy.yml` se ejecuta en cada push a `main`: instala las
    dependencias exactas del `package-lock.json` (`npm ci --ignore-scripts`), copia las
    librerías a `vendor/` y publica. En 1–2 minutos estará en
-   `https://TU_USUARIO.github.io/transmuta/`.
+   `https://TU_USUARIO.github.io/converter/`.
 
 El sitio funciona en cualquier subruta (todas las rutas son relativas), así que también
 vale como sitio de usuario (`TU_USUARIO.github.io`) o con dominio propio.
@@ -56,7 +56,7 @@ Requiere Node.js 20 o superior.
 ```bash
 npm ci           # dependencias exactas
 npm run vendor   # copia las librerías a vendor/
-npm run serve    # http://localhost:8080/transmuta/  (imita GitHub Pages)
+npm run serve    # http://localhost:8080/converter/  (imita GitHub Pages)
 ```
 
 No hay paso de compilación: el código está en `js/` como módulos ES nativos y se puede
@@ -79,7 +79,7 @@ js/doc/               Documentos: lectores → HTML intermedio → escritores
 js/data/              JSON, YAML, TOML, XML, INI
 js/workers/           Código aislado en Workers (7-Zip, WOFF2)
 scripts/vendor.mjs    Copia librerías de node_modules a vendor/
-scripts/serve.mjs     Servidor local bajo /transmuta/
+scripts/serve.mjs     Servidor local bajo /converter/
 ```
 
 - **Rutas.** Cada conversor declara rutas `{ from: [...], to: [...], run }`. El motor
@@ -279,6 +279,6 @@ Base64, Data URI o volcado hexadecimal.
 
 ## Licencia
 
-El código de Transmuta se publica bajo licencia MIT (ver `LICENSE`). Las librerías que se
+El código de Converter se publica bajo licencia MIT (ver `LICENSE`). Las librerías que se
 copian a `vendor/` mantienen sus propias licencias; están listadas en
 [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md). Ojo: el núcleo de ffmpeg es GPL.

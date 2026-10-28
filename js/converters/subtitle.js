@@ -95,7 +95,7 @@ function writeCues(to, cues, base) {
     case 'ass': {
       const esc = (s) => s.replace(/\n/g, '\\N').replace(/[{}]/g, '');
       return textBlob(`[Script Info]
-; Generado con Transmuta
+; Generado con Converter
 Title: ${base}
 ScriptType: v4.00+
 WrapStyle: 0

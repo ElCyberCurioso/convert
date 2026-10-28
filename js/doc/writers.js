@@ -22,7 +22,7 @@ export function writeHtml(hub) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="generator" content="Transmuta">
+<meta name="generator" content="Converter">
 <title>${title}</title>
 <style>${HTML_CSS}</style>
 </head>
@@ -200,7 +200,7 @@ export async function writeDocx(hub) {
     style: { paragraph: { indent: { left: 720 * (level + 1), hanging: 360 } } },
   }));
   const doc = new Document({
-    creator: 'Transmuta',
+    creator: 'Converter',
     title: hub.title || undefined,
     styles: { default: { document: { run: { font: 'Calibri', size: 22 } } } },
     numbering: { config: [{ reference: 'vinetas', levels: levels(false) }, { reference: 'numeros', levels: levels(true) }] },
@@ -342,7 +342,7 @@ ${heading(1, 20)}${heading(2, 16)}${heading(3, 14)}${heading(4, 12)}${heading(5,
 </office:document-styles>`;
 
   const meta = `<?xml version="1.0" encoding="UTF-8"?>
-<office:document-meta ${ns}><office:meta><meta:generator>Transmuta</meta:generator>${hub.title ? `<dc:title>${escapeXml(hub.title)}</dc:title>` : ''}<dc:date>${new Date().toISOString().slice(0, 19)}</dc:date></office:meta></office:document-meta>`;
+<office:document-meta ${ns}><office:meta><meta:generator>Converter</meta:generator>${hub.title ? `<dc:title>${escapeXml(hub.title)}</dc:title>` : ''}<dc:date>${new Date().toISOString().slice(0, 19)}</dc:date></office:meta></office:document-meta>`;
 
   const manifest = `<?xml version="1.0" encoding="UTF-8"?>
 <manifest:manifest xmlns:manifest="urn:oasis:names:tc:opendocument:xmlns:manifest:1.0" manifest:version="1.3">
@@ -454,7 +454,7 @@ export async function writeRtf(hub) {
   const rtf = `{\\rtf1\\ansi\\ansicpg1252\\deff0\\uc1
 {\\fonttbl{\\f0\\fswiss\\fcharset0 Calibri;}{\\f1\\fmodern\\fcharset0 Consolas;}}
 {\\colortbl;\\red5\\green99\\blue193;\\red243\\green243\\blue245;}
-{\\info${hub.title ? `{\\title ${rtfEsc(hub.title)}}` : ''}{\\doccomm Transmuta}}
+{\\info${hub.title ? `{\\title ${rtfEsc(hub.title)}}` : ''}{\\doccomm Converter}}
 \\paperw11906\\paperh16838\\margl1134\\margr1134\\margt1134\\margb1134\\fs22
 ${out.join('\n')}
 }`;
@@ -521,7 +521,7 @@ export async function writeEpub(hub, base, opts = {}) {
 <dc:title>${escapeXml(title)}</dc:title>
 <dc:language>${lang}</dc:language>
 <meta property="dcterms:modified">${modified}</meta>
-<meta name="generator" content="Transmuta"/>
+<meta name="generator" content="Converter"/>
 </metadata>
 <manifest>
 <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>

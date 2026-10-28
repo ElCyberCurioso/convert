@@ -1,10 +1,10 @@
 # Licencias de terceros
 
-Transmuta se apoya en estas librerías libres. Se copian sin modificar desde
+Converter se apoya en estas librerías libres. Se copian sin modificar desde
 `node_modules/` a `vendor/` con `npm run vendor`, salvo los ajustes mínimos de
 carga que se indican (no alteran su funcionamiento).
 
-| Componente | Versión | Licencia | Uso en Transmuta |
+| Componente | Versión | Licencia | Uso en Converter |
 |---|---|---|---|
 | [ffmpeg.wasm](https://github.com/ffmpegwasm/ffmpeg.wasm) (`@ffmpeg/ffmpeg`, `@ffmpeg/util`) | 0.12.15 / 0.12.2 | MIT | Envoltorio de ffmpeg en el navegador |
 | [ffmpeg-core](https://github.com/ffmpegwasm/ffmpeg.wasm) (`@ffmpeg/core`) | 0.12.10 | **GPL-2.0-or-later** (incluye x264, x265, LAME, libvpx, Opus, Vorbis, Theora, libwebp) | Audio y vídeo |
@@ -39,7 +39,7 @@ carga que se indican (no alteran su funcionamiento).
 `ffmpeg-core.wasm` está compilado con `--enable-gpl`. Al publicar el sitio
 distribuyes ese binario, así que se aplican las condiciones de la GPL a ese
 componente: su código fuente y las instrucciones de compilación están en
-<https://github.com/ffmpegwasm/ffmpeg.wasm>. El resto de Transmuta se comunica
+<https://github.com/ffmpegwasm/ffmpeg.wasm>. El resto de Converter se comunica
 con él a través de un Worker y no lo modifica.
 
 *Esto no es asesoramiento legal; si el proyecto va a tener uso comercial, revisa

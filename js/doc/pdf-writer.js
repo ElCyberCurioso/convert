@@ -333,8 +333,8 @@ export async function writePdf(hub, opts = {}) {
     });
   }
   if (hub.title) pdf.setTitle(hub.title);
-  pdf.setProducer('Transmuta');
-  pdf.setCreator('Transmuta');
+  pdf.setProducer('Converter');
+  pdf.setCreator('Converter');
   pdf.setLanguage?.(opts.lang || 'es');
   return new Blob([await pdf.save()], { type: 'application/pdf' });
 }

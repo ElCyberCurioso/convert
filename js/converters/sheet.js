@@ -170,7 +170,7 @@ function toSql(sheets, base) {
     if (v instanceof Date) return `'${isoDate(v)}'`;
     return `'${String(v).replace(/'/g, "''")}'`;
   };
-  const out = [`-- Generado con Transmuta (${new Date().toISOString().slice(0, 10)})`, ''];
+  const out = [`-- Generado con Converter (${new Date().toISOString().slice(0, 10)})`, ''];
   for (const s of sheets) {
     const table = (sheets.length > 1 ? s.name : base).replace(/[^\w]+/g, '_').replace(/^(\d)/, '_$1').toLowerCase() || 'tabla';
     const objs = rowsToObjects(s.rows);

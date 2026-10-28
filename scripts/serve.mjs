@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 // Servidor estático local que imita GitHub Pages: sirve el repo bajo una
-// subruta (/transmuta/ por defecto) y sin cabeceras especiales.
+// subruta (/converter/ por defecto) y sin cabeceras especiales.
 //
-//   npm run serve                 -> http://localhost:8080/transmuta/
+//   npm run serve                 -> http://localhost:8080/converter/
 //   PORT=3000 BASE=/ npm run serve
 
 import { createServer } from 'node:http';
@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const port = Number(process.env.PORT || 8080);
-const base = (process.env.BASE || '/transmuta/').replace(/\/?$/, '/');
+const base = (process.env.BASE || '/converter/').replace(/\/?$/, '/');
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8',
@@ -44,4 +44,4 @@ createServer((req, res) => {
   } catch {
     res.writeHead(404); res.end('Not found');
   }
-}).listen(port, () => console.log(`Transmuta en http://localhost:${port}${base}`));
+}).listen(port, () => console.log(`Converter en http://localhost:${port}${base}`));
