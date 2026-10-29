@@ -73,7 +73,7 @@ export function catalog() {
   return Object.entries(FORMATS)
     .filter(([id, f]) => !f.variant && id !== 'bin')
     .map(([id, f]) => ({ id, ...f, targets: targetsFor(id) }))
-    .filter((f) => f.targets.some((t) => !['b64', 'datauri', 'hex', 'zip', 'gz'].includes(t.id)));
+    .filter((f) => f.targets.some((t) => !['b64', 'datauri', 'hex', 'zip', 'gz', 'hashes'].includes(t.id)));
 }
 
 export function outputName(input, to, suffix = '') {

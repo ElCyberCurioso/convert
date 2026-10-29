@@ -131,6 +131,7 @@ export const FORMATS = {
   b64: F('other', 'Base64', ['b64', 'base64'], 'text/plain'),
   datauri: F('other', 'Data URI', ['txt'], 'text/plain', { variant: true }),
   hex: F('other', 'Volcado hexadecimal', ['txt'], 'text/plain', { variant: true }),
+  hashes: F('other', 'Hashes (MD5, SHA-1, SHA-256…)', ['txt'], 'text/plain', { variant: true }),
   decoded: F('other', 'Decodificar Base64', ['bin'], 'application/octet-stream', { variant: true }),
   exe: F('other', 'Ejecutable PE', ['exe', 'dll', 'sys'], 'application/vnd.microsoft.portable-executable'),
   elf: F('other', 'Ejecutable ELF', ['elf', 'so'], 'application/x-elf'),

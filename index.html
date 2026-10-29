@@ -39,30 +39,75 @@
   <section class="hero">
     <p class="kicker mono">100 % local · sin servidores · sin registro</p>
     <h1>Convierte cualquier archivo.<br><em>Sin subirlo a ningún sitio.</em></h1>
-    <p class="lede">Imágenes, audio, vídeo, documentos, hojas de cálculo, datos, comprimidos, fuentes y subtítulos. Todo se procesa en tu navegador con WebAssembly: tus archivos no salen de tu equipo.</p>
+    <p class="lede">Imágenes, audio, vídeo, documentos, hojas de cálculo, datos, comprimidos, fuentes y subtítulos. Y para texto: Base64, URL, hexadecimal, JWT, hashes y más. Todo se procesa en tu navegador con WebAssembly: nada sale de tu equipo.</p>
     <dl class="stats mono">
       <div><dt>Formatos de entrada</dt><dd id="stat-formats">—</dd></div>
       <div><dt>Conversiones posibles</dt><dd id="stat-pairs">—</dd></div>
+      <div><dt>Operaciones de texto</dt><dd id="stat-text">—</dd></div>
       <div><dt>Bytes enviados</dt><dd>0</dd></div>
     </dl>
   </section>
 
   <section class="workspace" aria-label="Conversor">
-    <label id="drop" class="drop" for="file-input" tabindex="0">
-      <input id="file-input" class="visually-hidden" type="file" multiple tabindex="-1">
-      <span class="drop-icon" data-icon="upload"></span>
-      <span class="drop-title">Suelta aquí tus archivos</span>
-      <span class="drop-sub">o pulsa para elegirlos · también puedes pegarlos con <kbd>Ctrl</kbd>+<kbd>V</kbd></span>
-    </label>
+    <div class="tabs" role="tablist" aria-label="Qué quieres convertir">
+      <button id="tab-files" class="tab" type="button" role="tab" aria-selected="true" aria-controls="panel-files" data-icon="upload">Archivos</button>
+      <button id="tab-text" class="tab" type="button" role="tab" aria-selected="false" aria-controls="panel-text" tabindex="-1" data-icon="type">Texto</button>
+    </div>
 
-    <div id="toolbar" class="toolbar"></div>
+    <div id="panel-files" class="panel" role="tabpanel" aria-labelledby="tab-files">
+      <label id="drop" class="drop" for="file-input" tabindex="0">
+        <input id="file-input" class="visually-hidden" type="file" multiple tabindex="-1">
+        <span class="drop-icon" data-icon="upload"></span>
+        <span class="drop-title">Suelta aquí tus archivos</span>
+        <span class="drop-sub">o pulsa para elegirlos · también puedes pegarlos con <kbd>Ctrl</kbd>+<kbd>V</kbd></span>
+      </label>
 
-    <details id="options" class="options" open hidden>
-      <summary><span data-icon="sliders"></span>Ajustes de conversión</summary>
-      <div id="options-body" class="options-body"></div>
-    </details>
+      <div id="toolbar" class="toolbar"></div>
 
-    <ol id="queue" class="queue" aria-label="Archivos"></ol>
+      <details id="options" class="options" open hidden>
+        <summary><span data-icon="sliders"></span>Ajustes de conversión</summary>
+        <div id="options-body" class="options-body"></div>
+      </details>
+
+      <ol id="queue" class="queue" aria-label="Archivos"></ol>
+    </div>
+
+    <div id="panel-text" class="panel text-tool" role="tabpanel" aria-labelledby="tab-text" hidden>
+      <nav id="tt-ops" class="tt-ops" aria-label="Operación de texto"></nav>
+      <div class="tt-grid">
+        <section class="tt-box" aria-labelledby="tt-in-label">
+          <div class="tt-head">
+            <label id="tt-in-label" for="tt-input">Entrada</label>
+            <div class="tt-tools">
+              <label class="tt-inline"><span>Leer como</span>
+                <select id="tt-mode">
+                  <option value="utf8">Texto (UTF-8)</option>
+                  <option value="hex">Hexadecimal</option>
+                  <option value="base64">Base64</option>
+                </select>
+              </label>
+              <button id="tt-clear" class="btn small ghost" type="button">Limpiar</button>
+            </div>
+          </div>
+          <textarea id="tt-input" class="tt-area" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="Escribe o pega aquí el texto. El resultado se calcula al momento y nada sale de tu navegador."></textarea>
+          <div class="tt-foot"><span id="tt-stats" class="meta"></span><span id="tt-suggest" class="tt-suggest"></span></div>
+        </section>
+        <section class="tt-box out" aria-labelledby="tt-out-label">
+          <div class="tt-head">
+            <span id="tt-out-label">Resultado</span>
+            <div class="tt-tools">
+              <button id="tt-copy" class="btn small" type="button" data-icon="copy"><span>Copiar</span></button>
+              <button id="tt-use" class="btn small ghost" type="button" title="Usar el resultado como nueva entrada (para encadenar operaciones)" data-icon="retry"><span>Encadenar</span></button>
+              <button id="tt-download" class="btn small ghost" type="button" title="Descargar como .txt" data-icon="download"><span class="visually-hidden">Descargar</span></button>
+            </div>
+          </div>
+          <div id="tt-extra" class="tt-extra" hidden></div>
+          <textarea id="tt-output" class="tt-area" readonly spellcheck="false" aria-label="Resultado"></textarea>
+          <div id="tt-hashes" class="tt-hashes" hidden aria-live="polite"></div>
+          <p id="tt-note" class="note" hidden></p>
+        </section>
+      </div>
+    </div>
   </section>
 
   <section id="formatos" class="formats">

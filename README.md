@@ -2,8 +2,9 @@
 
 **Conversor de archivos que funciona entero en el navegador.** Imágenes, audio, vídeo,
 documentos, hojas de cálculo, datos, comprimidos, fuentes y subtítulos: **81 formatos
-de entrada y 1.377 conversiones**, sin servidor, sin subir nada y sin dependencias de
-terceros en tiempo de ejecución. Pensado para publicarse en **GitHub Pages**.
+de entrada y 1.458 conversiones**, más **50 operaciones de texto** (Base64, URL, hex,
+JWT, hashes…), sin servidor, sin subir nada y sin dependencias de terceros en tiempo de
+ejecución. Pensado para publicarse en **GitHub Pages**.
 
 - **Privado por diseño.** Las conversiones se ejecutan en tu dispositivo con
   WebAssembly (ffmpeg, libarchive, 7-Zip, pdf.js, libaom, libheif…) y APIs del navegador.
@@ -13,6 +14,27 @@ terceros en tiempo de ejecución. Pensado para publicarse en **GitHub Pages**.
   extensión, y avisa si no coinciden (p. ej. un `.pdf` que en realidad es un ZIP).
 - **Por lotes.** Arrastra o pega varios archivos, conviértelos todos a un formato común,
   únelos en un PDF o descárgalo todo en un ZIP.
+- **Texto en vivo.** La pestaña *Texto* codifica, decodifica, transforma y calcula hashes
+  mientras escribes, sugiere la decodificación adecuada (Base64, JWT, URL, hex…) y permite
+  encadenar operaciones. Lo que escribes no se guarda en ningún sitio.
+
+## Herramientas de texto
+
+| Grupo | Operaciones |
+|---|---|
+| Codificar | Base64, Base64URL, Base32, hexadecimal, `\x` hex, URL (componente, todos los caracteres, completa), formulario (`+`), entidades HTML, HTML numérico, escapes Unicode/JS, cadena JSON, Quoted-printable, binario, decimal, Punycode (IDN), ROT13, ROT47 |
+| Decodificar | Base64/Base64URL, Base32, hexadecimal (admite `0x`, `\x`, espacios, `:`), URL, formulario, entidades HTML (con nombre y numéricas), escapes Unicode/JS, cadena JSON, Quoted-printable, binario, decimal, Punycode, **JWT** (cabecera, carga, fechas `iat`/`nbf`/`exp`, avisos de `alg: none`, sin firma o caducado) |
+| Hashes | MD5, SHA-1, SHA-256, SHA-384, SHA-512, SHA3-256, SHA3-512, Keccak-256, MD4, CRC32, **NTLM**, **HMAC** (SHA-1/256/384/512, MD5); salida en hex, HEX o Base64 |
+| Transformar | MAYÚSCULAS, minúsculas, tipo título, camelCase, PascalCase, snake_case, kebab-case, CONSTANT_CASE, slug, quitar acentos, invertir (respeta emoji), ordenar líneas, quitar duplicadas/vacías, recortar espacios |
+
+La entrada puede leerse como **texto UTF-8, hexadecimal o Base64**, así que conversiones
+como hex → Base64 o el hash de unos bytes en hex son directas. SHA-1/SHA-2 usan WebCrypto;
+MD5, MD4, SHA-3, Keccak y CRC32 están implementados en `js/text/hash.js` y verificados
+contra `hashlib` de Python (longitudes de 0 a 300 bytes y 1 MB) y vectores de las RFC.
+
+Para archivos, el destino **Hashes** de cualquier archivo genera un `.txt` con todos los
+valores y líneas compatibles con `md5sum`/`sha256sum`; se calcula en un Worker para no
+bloquear la página.
 
 ## Publicar en GitHub Pages
 
@@ -67,7 +89,8 @@ editar y recargar directamente.
 ```
 index.html            Interfaz y CSP
 css/styles.css        Estilos (tema claro/oscuro, móvil)
-js/app.js             Interfaz: cola, ajustes, progreso, descargas, catálogo
+js/app.js             Interfaz: pestañas, cola, ajustes, progreso, descargas, catálogo
+js/dom.js             Utilidades de DOM, almacenamiento y portapapeles
 js/engine.js          Registro de rutas de conversión y ejecución
 js/formats.js         Catálogo de formatos (extensiones, MIME, categoría)
 js/detect.js          Detección por firma (magic bytes) + extensión
@@ -77,7 +100,9 @@ js/converters/        Un módulo por familia: image, media, document, sheet,
                       data, archive, font, subtitle, generic
 js/doc/               Documentos: lectores → HTML intermedio → escritores
 js/data/              JSON, YAML, TOML, XML, INI
-js/workers/           Código aislado en Workers (7-Zip, WOFF2)
+js/text-tool.js       Pestaña Texto (resultado en vivo, sugerencias, encadenado)
+js/text/              Codificaciones, transformaciones y hashes de texto
+js/workers/           Código aislado en Workers (7-Zip, WOFF2, hashes de archivos)
 scripts/vendor.mjs    Copia librerías de node_modules a vendor/
 scripts/serve.mjs     Servidor local bajo /converter/
 ```
@@ -124,7 +149,8 @@ scripts/serve.mjs     Servidor local bajo /converter/
   --ignore-scripts`, Actions fijadas por commit y Dependabot para actualizaciones menores.
   `scripts/vendor.mjs` falla si algún módulo importa un paquete que no se haya copiado.
 - **Privacidad.** Sin cookies ni analítica. `localStorage` solo guarda tema, ajustes y el
-  último formato elegido por tipo; la contraseña de comprimidos nunca se guarda.
+  último formato elegido por tipo; la contraseña de comprimidos, el texto de la pestaña
+  *Texto* y las claves HMAC nunca se guardan.
 
 ## Limitaciones conocidas
 
@@ -143,8 +169,8 @@ scripts/serve.mjs     Servidor local bajo /converter/
 ## Formatos
 
 Además de lo que indica cada tabla, **cualquier archivo** (incluidos ejecutables, bases de
-datos u otros formatos desconocidos) puede comprimirse en ZIP o GZIP y convertirse a
-Base64, Data URI o volcado hexadecimal.
+datos u otros formatos desconocidos) puede comprimirse en ZIP o GZIP, convertirse a
+Base64, Data URI o volcado hexadecimal y obtener sus hashes.
 
 ### Imagen
 

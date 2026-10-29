@@ -8,29 +8,13 @@ import { OPTION_DEFS, relevantOptions, defaults } from './options.js';
 import { formatBytes, UserError } from './util.js';
 import { icon } from './icons.js';
 import { loadFflate } from './loaders.js';
+import { h, store, copyText } from './dom.js';
+import { initTextTool, selectTextOp, TEXT_OPS } from './text-tool.js';
 
 // ---------------------------------------------------------------- utilidades DOM
 
-function h(tag, attrs = {}, ...kids) {
-  const el = document.createElement(tag);
-  for (const [k, v] of Object.entries(attrs)) {
-    if (v === null || v === undefined || v === false) continue;
-    if (k === 'class') el.className = v;
-    else if (k === 'text') el.textContent = v;
-    else if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
-    else if (k === 'dataset') Object.assign(el.dataset, v);
-    else if (v === true) el.setAttribute(k, '');
-    else el.setAttribute(k, v);
-  }
-  for (const c of kids.flat()) if (c !== null && c !== undefined && c !== false) el.append(c);
-  return el;
-}
 const $ = (s, el = document) => el.querySelector(s);
 
-const store = {
-  get(k, d) { try { const v = localStorage.getItem(`converter:${k}`); return v === null ? d : JSON.parse(v); } catch { return d; } },
-  set(k, v) { try { localStorage.setItem(`converter:${k}`, JSON.stringify(v)); } catch { /* sin almacenamiento */ } },
-};
 
 const DEFAULT_TARGET = {
   image: ['png', 'jpg'], audio: ['mp3', 'wav'], video: ['mp4', 'webm'], doc: ['pdf', 'docx'], sheet: ['xlsx', 'csv'],
@@ -66,6 +50,7 @@ const els = {
 async function addFiles(fileList) {
   const files = [...fileList].filter((f) => f && f.size !== undefined);
   if (!files.length) return;
+  window.showTab?.('tab-files', true);
   for (const file of files) {
     const det = await detectFormat(file);
     const input = new Input(file, det.id);
@@ -161,6 +146,7 @@ function renderOutputs(outputs, base) {
         h('span', { class: 'name', text: o.name, title: o.name }),
         h('span', { class: 'meta', text: formatBytes(o.blob.size) })),
       (isAudio || isVideo) ? h('button', { class: 'icon-btn', type: 'button', title: 'Reproducir', 'aria-label': `Reproducir ${shown}`, onclick: (e) => togglePreview(e.currentTarget, o, isVideo) }, icon('play')) : null,
+      isText(o) ? h('button', { class: 'btn small ghost', type: 'button', 'aria-expanded': 'false', onclick: (e) => toggleTextPreview(e.currentTarget, o) }, h('span', { text: 'Ver' })) : null,
       h('a', { class: 'btn small', href: o.url, download: shown, title: `Descargar ${shown}` }, icon('download'), h('span', { text: 'Descargar' })));
     list.append(li);
   }
@@ -178,6 +164,23 @@ function fmtCatOf(name) {
     if (ids.includes(ext)) return cat;
   }
   return 'other';
+}
+
+const isText = (o) => o.blob.size < 512 * 1024 && /^(text\/|application\/(json|xml|yaml|toml|sql|x-ndjson|x-subrip))/.test(o.blob.type);
+
+async function toggleTextPreview(btn, o) {
+  const li = btn.closest('.output');
+  const next = li.nextElementSibling;
+  if (next?.classList.contains('preview')) { next.remove(); btn.setAttribute('aria-expanded', 'false'); return; }
+  const text = await o.blob.text();
+  const shown = text.length > 20000 ? `${text.slice(0, 20000)}\n…` : text;
+  const copyBtn = h('button', { class: 'btn small', type: 'button', onclick: async () => {
+    const ok = await copyText(text);
+    copyBtn.lastChild.textContent = ok ? 'Copiado' : 'No se pudo copiar';
+    setTimeout(() => { copyBtn.lastChild.textContent = 'Copiar'; }, 1200);
+  } }, icon('copy'), h('span', { text: 'Copiar' }));
+  li.after(h('li', { class: 'preview text' }, h('pre', { text: shown }), h('div', { class: 'preview-actions' }, copyBtn)));
+  btn.setAttribute('aria-expanded', 'true');
 }
 
 function togglePreview(btn, o, isVideo) {
@@ -489,6 +492,14 @@ function renderCatalog() {
       ...[...groups].map(([cat, labels]) => h('p', { class: 'detail-row' }, h('span', { class: 'detail-cat', text: CATEGORIES[cat] }), h('span', { text: labels.join(' · ') }))),
     );
   };
+  $('#stat-text').textContent = String(TEXT_OPS.length);
+  const textCard = h('div', { class: 'cat text-ops', dataset: { cat: 'text' } },
+    h('h3', {}, icon('type'), h('span', { text: 'Texto' }), h('span', { class: 'muted', text: String(TEXT_OPS.length) })),
+    h('div', { class: 'chips' }, TEXT_OPS.map((o) => {
+      const chip = h('button', { class: 'chip', type: 'button', 'aria-pressed': 'false', title: 'Abrir en la pestaña Texto', dataset: { q: `${o.id} ${o.label} ${o.group} texto`.toLowerCase() }, text: o.label });
+      chip.addEventListener('click', () => { selectTextOp(o.id); window.showTab('tab-text'); $('.workspace').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+      return chip;
+    })));
   const search = h('input', { type: 'search', class: 'cat-search', placeholder: 'Busca un formato: heic, mkv, docx…', 'aria-label': 'Buscar formato', spellcheck: 'false' });
   const grid = h('div', { class: 'cat-grid' });
   for (const [cat, list] of byCat) {
@@ -509,8 +520,9 @@ function renderCatalog() {
       if (hit && q && !first) first = chip;
     }
     for (const c of grid.querySelectorAll('.cat')) c.hidden = ![...c.querySelectorAll('.chip')].some((x) => !x.hidden);
-    if (first) first.click();
+    if (first && !first.closest('.text-ops')) first.click();
   });
+  grid.append(textCard);
   els.catalog.append(search, grid, detail);
 }
 
@@ -558,8 +570,38 @@ function setupTheme() {
   });
 }
 
+function setupTabs() {
+  const tabs = [$('#tab-files'), $('#tab-text')];
+  const show = (id, focus = false) => {
+    for (const t of tabs) {
+      const on = t.id === id;
+      t.setAttribute('aria-selected', String(on));
+      t.tabIndex = on ? 0 : -1;
+      $(`#${t.getAttribute('aria-controls')}`).hidden = !on;
+      if (on && focus) t.focus();
+    }
+    store.set('tab', id);
+    const hash = id === 'tab-text' ? '#texto' : '';
+    if (location.hash !== hash && (hash || location.hash === '#texto')) history.replaceState(null, '', hash || location.pathname + location.search);
+    if (id === 'tab-text' && !focus) $('#tt-input').focus({ preventScroll: true });
+  };
+  tabs.forEach((t, i) => {
+    t.addEventListener('click', () => show(t.id));
+    t.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      e.preventDefault();
+      show(tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length].id, true);
+    });
+  });
+  window.showTab = show;
+  const initial = location.hash === '#texto' ? 'tab-text' : store.get('tab', 'tab-files');
+  if (initial === 'tab-text') show('tab-text', true);
+}
+
 setupDrop();
 setupTheme();
+initTextTool();
+setupTabs();
 if (matchMedia('(max-width: 640px)').matches) els.options.open = false;
 // En GitHub Pages se enlaza el repositorio automáticamente (usuario.github.io/repo/)
 if (location.hostname.endsWith('.github.io')) {

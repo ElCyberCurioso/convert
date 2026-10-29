@@ -27,15 +27,44 @@ function hexDump(bytes) {
   return lines.join('\n') + '\n';
 }
 
+async function fileHashes(input, ctx) {
+  ctx.progress?.(null, 'Calculando hashes…');
+  const worker = new Worker(new URL('../workers/hash.worker.js', import.meta.url), { type: 'module' });
+  try {
+    const { rows, partial } = await new Promise((resolve, reject) => {
+      worker.onmessage = ({ data }) => (data.error ? reject(new Error(data.error)) : resolve(data));
+      worker.onerror = (e) => reject(new Error(e.message || 'Error en el worker de hashes'));
+      ctx.signal?.addEventListener('abort', () => reject(new DOMException('Cancelado', 'AbortError')), { once: true });
+      worker.postMessage({ file: input.file });
+    });
+    const nf = new Intl.NumberFormat('es-ES');
+    const width = Math.max(...rows.map((r) => r.label.length)) + 2;
+    const sums = { md5: 'md5sum', sha1: 'sha1sum', sha256: 'sha256sum', sha512: 'sha512sum' };
+    const lines = [
+      `Hashes de «${input.name}» · ${nf.format(input.size)} bytes`,
+      '',
+      ...rows.map((r) => `${r.label.padEnd(width)}${r.hex}`),
+      '',
+      '# Comprobación con coreutils (p. ej. sha256sum -c):',
+      ...rows.filter((r) => sums[r.id]).map((r) => `# ${sums[r.id]}: ${r.hex}  ${input.name}`),
+    ];
+    if (partial) lines.push('', '# Archivo de más de 256 MB: se omiten SHA-3, Keccak y MD4 (lentos en el navegador).');
+    return { name: `${input.name}.hashes.txt`, blob: textBlob(lines.join('\n') + '\n') };
+  } finally {
+    worker.terminate();
+  }
+}
+
 export default {
   id: 'generic',
   routes: [
     {
       from: '*',
-      to: ['zip', 'gz', 'b64', 'datauri', 'hex'],
+      to: ['hashes', 'zip', 'gz', 'b64', 'datauri', 'hex'],
       exclude: (from, to) => from === to,
-      labels: { zip: 'ZIP (comprimir)', gz: 'GZIP (comprimir)', b64: 'Base64', datauri: 'Data URI (Base64)', hex: 'Volcado hexadecimal' },
-      async run(input, to) {
+      labels: { zip: 'ZIP (comprimir)', gz: 'GZIP (comprimir)', b64: 'Base64', datauri: 'Data URI (Base64)', hex: 'Volcado hexadecimal', hashes: 'Hashes (MD5, SHA-1, SHA-256…)' },
+      async run(input, to, ctx) {
+        if (to === 'hashes') return fileHashes(input, ctx);
         const bytes = await input.bytes();
         const { zipSync, gzipSync } = await loadFflate();
         if (to === 'zip') return new Blob([zipSync({ [input.name]: [bytes, { level: 6 }] })], { type: 'application/zip' });
