@@ -1,0 +1,6 @@
+node_modules/
+# Se genera con `npm run vendor` (lo hace el workflow de GitHub Actions)
+vendor/
+_site/
+.DS_Store
+Thumbs.db

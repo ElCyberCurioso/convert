@@ -3,6 +3,36 @@
 
 export const VENDOR = new URL('../vendor/', import.meta.url).href;
 
+import { UserError } from './util.js';
+
+// ¿Está publicada la carpeta vendor/? Si falta (sitio publicado sin ejecutar
+// `npm run vendor`), todas las conversiones fallarían con errores crípticos.
+let vendorCheck = null;
+export function vendorAvailable() {
+  vendorCheck ??= fetch(VENDOR + 'fflate/fflate.js', { method: 'HEAD', cache: 'no-store' })
+    .then((r) => r.ok)
+    .catch(() => null); // sin conexión: no se puede saber
+  return vendorCheck;
+}
+
+export const VENDOR_MISSING_MSG = 'Faltan las librerías de conversión (carpeta vendor/): el sitio se ha publicado sin el workflow de GitHub Actions que las genera. Consulta «Publicar en GitHub Pages» en el README.';
+
+/** Traduce un fallo al cargar una librería a un mensaje comprensible. */
+async function loadError(path, err) {
+  const ok = await vendorAvailable();
+  if (ok === false) return new UserError(VENDOR_MISSING_MSG);
+  return new UserError(`No se pudo cargar la librería ${path.split('/')[0]} (¿sin conexión o caché desactualizada? Recarga la página). Detalle: ${err?.message || err}`);
+}
+
+/** import() dinámico de vendor/ con mensaje de error claro. */
+export async function importVendor(path) {
+  try {
+    return await import(VENDOR + path);
+  } catch (e) {
+    throw await loadError(path, e);
+  }
+}
+
 const cache = new Map();
 function once(key, fn) {
   if (!cache.has(key)) {
@@ -20,12 +50,12 @@ function script(path, globalName) {
     s.async = true;
     s.onload = () => (globalThis[globalName] ? resolve(globalThis[globalName])
       : reject(new Error(`${path} no definió ${globalName}`)));
-    s.onerror = () => reject(new Error(`No se pudo cargar ${path}`));
+    s.onerror = () => { s.remove(); loadError(path, new Error('error de red')).then(reject); };
     document.head.append(s);
   }));
 }
 
-const esm = (path) => once('esm:' + path, () => import(VENDOR + path));
+const esm = (path) => once('esm:' + path, () => importVendor(path));
 
 export const loadFflate = () => esm('fflate/fflate.js');
 export const loadPdfLib = () => esm('pdf-lib/pdf-lib.esm.min.js');
@@ -74,7 +104,7 @@ export const loadUTIF = () => once('utif', async () => {
 });
 
 export const loadPdfjs = () => once('pdfjs', async () => {
-  const pdfjs = await import(VENDOR + 'pdfjs/pdf.min.mjs');
+  const pdfjs = await importVendor('pdfjs/pdf.min.mjs');
   pdfjs.GlobalWorkerOptions.workerSrc = VENDOR + 'pdfjs/pdf.worker.min.mjs';
   return pdfjs;
 });

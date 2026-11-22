@@ -57,6 +57,14 @@ bloquear la página.
 El sitio funciona en cualquier subruta (todas las rutas son relativas), así que también
 vale como sitio de usuario (`TU_USUARIO.github.io`) o con dominio propio.
 
+> **¿La página carga pero las conversiones fallan** con *«Failed to fetch dynamically
+> imported module …/vendor/…»* o aparece el aviso *«Faltan las librerías de conversión»*?
+> El sitio se ha publicado sin `vendor/`. Casi siempre es porque la carpeta oculta
+> `.github/` no llegó al repositorio (al arrastrar archivos a la web de GitHub, o si el
+> explorador oculta las carpetas que empiezan por punto). Créala con *Add file → Create
+> new file* y el nombre `.github/workflows/deploy.yml`, pega el contenido del workflow y
+> elige **Source: GitHub Actions** en *Settings → Pages*.
+
 ### Alternativa sin Actions («Deploy from a branch»)
 
 Si prefieres publicar directamente desde la rama, genera `vendor/` en local y súbelo:

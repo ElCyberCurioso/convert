@@ -7,7 +7,7 @@ import { CATEGORIES, fmt } from './formats.js';
 import { OPTION_DEFS, relevantOptions, defaults } from './options.js';
 import { formatBytes, UserError } from './util.js';
 import { icon } from './icons.js';
-import { loadFflate } from './loaders.js';
+import { loadFflate, vendorAvailable } from './loaders.js';
 import { h, store, copyText } from './dom.js';
 import { initTextTool, selectTextOp, TEXT_OPS } from './text-tool.js';
 
@@ -598,10 +598,23 @@ function setupTabs() {
   if (initial === 'tab-text') show('tab-text', true);
 }
 
+// Aviso si el sitio se publicó sin vendor/ (las conversiones de archivos no funcionarían)
+function checkVendor() {
+  vendorAvailable().then((ok) => {
+    if (ok !== false) return;
+    const code = (t) => h('code', { text: t });
+    $('.workspace').prepend(h('div', { class: 'banner warn', role: 'alert' }, icon('alert'), h('div', {},
+      h('strong', { text: 'Faltan las librerías de conversión.' }),
+      h('p', {}, 'El sitio se ha publicado sin la carpeta ', code('vendor/'), ', así que las conversiones de archivos no funcionarán (la pestaña Texto sí). ',
+        'Para arreglarlo: sube ', code('.github/workflows/deploy.yml'), ' al repositorio y en ', h('strong', { text: 'Settings → Pages → Source' }), ' elige ', h('strong', { text: 'GitHub Actions' }), '.'))));
+  });
+}
+
 setupDrop();
 setupTheme();
 initTextTool();
 setupTabs();
+checkVendor();
 if (matchMedia('(max-width: 640px)').matches) els.options.open = false;
 // En GitHub Pages se enlaza el repositorio automáticamente (usuario.github.io/repo/)
 if (location.hostname.endsWith('.github.io')) {

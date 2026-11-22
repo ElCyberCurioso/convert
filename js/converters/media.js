@@ -1,7 +1,7 @@
 // Audio y vídeo con ffmpeg.wasm (núcleo de un hilo: no necesita
 // SharedArrayBuffer ni cabeceras COOP/COEP, que GitHub Pages no permite).
 
-import { VENDOR } from '../loaders.js';
+import { VENDOR, importVendor } from '../loaders.js';
 import { fail, UserError, fetchWithProgress } from '../util.js';
 import { FORMATS } from '../formats.js';
 
@@ -17,7 +17,7 @@ let ffPromise = null;
 async function getFFmpeg(ctx) {
   if (!ffPromise) {
     ffPromise = (async () => {
-      const { FFmpeg } = await import(VENDOR + 'ffmpeg/index.js');
+      const { FFmpeg } = await importVendor('ffmpeg/index.js');
       const ff = new FFmpeg();
       // El .wasm se descarga con progreso; el navegador lo guarda en caché
       const wasm = await fetchWithProgress(VENDOR + 'ffmpeg-core/ffmpeg-core.wasm',
